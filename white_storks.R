@@ -92,8 +92,13 @@ library(raster)
 move_data <- align_move(storks, res = 1, unit = "days")
 plot(move_data)
 
-frames <- frames_spatial(move_data, path_colours = c("red","green","blue"),
-                         map_service = "osm", map_type = "watercolor", alpha = 0.5)
+frames <- frames_spatial(move_data, path_colours = c("green","red","blue"),
+                         map_service = "osm", map_type = "watercolor", alpha = 0.5, r_times=storks.times)%>%
+  add_labels(x = "Longitude", y = "Latitude") %>% # add some customizations, such as axis labels
+  add_northarrow() %>%
+  add_scalebar() %>%
+  add_timestamps(move_data, type = "label") %>%
+  add_progress()
 
 length(frames) # number of frames
 frames[[1]] 
@@ -117,7 +122,7 @@ frames[[365]]
 
 #Finally, animate the newly created frames:
   
-animate_frames(frames, out_file = "storks.gif", width = 700, height = 500, res = 80)
+animate_frames(frames, out_file = "storks2.gif", width = 700, height = 500, res = 80)
 
 
 # finding stopping sites - Segmentation: 
@@ -182,4 +187,31 @@ length(storks.heading.ul)
 ## BCPA: Behavioral Change Point Analysis: sliding window over persistence measure (autocorrelation)
 ## Net Square Dispalcement (NSD): distance from starting point, correlating with speed and turning angle
 
+storks.nsd <- sp::spDistsN1(storks,storks[1,])
+plot(storks.nsd)
+
+ggplot(data.frame(storks.nsd,storks$timestamp))+
+  geom_point(aes(x=storks.timestamp,y=storks.nsd))
+
+chompy.nsd <- sp::spDistsN1(chompy,chompy[1,])
+plot(chompy$timestamp,chompy.nsd)
+
+ggplot(data.frame(chompy.nsd,chompy$timestamp))+
+  geom_point(aes(x=chompy.timestamp,y=chompy.nsd),color="green")+
+  ggtitle("NSD Chompy")+
+  xlab("")
+
+
+redrunner.nsd <- sp::spDistsN1(redrunner,redrunner[1,])
+                               
+ggplot(data.frame(redrunner.nsd,redrunner$timestamp))+
+  geom_point(aes(x=redrunner.timestamp,y=redrunner.nsd),color="red")+
+  ggtitle("NSD Redrunner")+
+  xlab("")
+
+sierit.nsd <- sp::spDistsN1(sierit,sierit[1,])
+ggplot(data.frame(sierit.nsd,sierit$timestamp))+
+  geom_point(aes(x=sierit.timestamp,y=sierit.nsd),color="blue")+
+  ggtitle("NSD Sierit")+
+  xlab("")
 
